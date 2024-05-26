@@ -1,0 +1,534 @@
+//Author: Poke J from Project Pokemon
+//Title: Pokemon Space World Demo to PK2
+//Purpose: To convert a dumped Pokemon from the Space World 98 Demo into a PK2 file
+
+#pragma once
+
+#ifndef POKEMON_H
+#define POKEMON_H
+#include "Pokemon.h"
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+using namespace std;
+
+//Appends the Pokemon array with the OT and Pokemon name.  Pokemon name is currently set to "?".
+class DemoPokemon {
+protected:
+	//An array that stores the data of the trainer and nickname
+	char endString[2][6] = { { (char)0x8A, (char)0x93, (char)0x8B, (char)0x50, (char)0x50, (char)0x50 }, //Default player name
+							{ (char)0xE6, (char)0x50, (char)0x50, (char)0x50, (char)0x50, (char)0x50 } //If player ID is 00000
+							};
+	char pokeName[251][6] = { { (char)0x9B, (char)0x8B, (char)0x06, (char)0x0F, (char)0x97, (char)0x50 }, //1 Bulbasuar //used to nickname the Pokemon with its demo name
+							{ (char)0x9B, (char)0x8B, (char)0x06, (char)0x8E, (char)0x82, (char)0x50 }, //2 Ivysaur
+							{ (char)0x9B, (char)0x8B, (char)0x06, (char)0x19, (char)0x94, (char)0x50 }, //3 Venasaur
+							{ (char)0x9A, (char)0x93, (char)0x85, (char)0x08, (char)0x50, (char)0x50 }, //4 Charmander
+							{ (char)0xD8, (char)0x0A, (char)0xE3, (char)0x13, (char)0x50, (char)0x50 }, //5 Charmeleon
+							{ (char)0xD8, (char)0x0A, (char)0xE3, (char)0x13, (char)0xAB, (char)0x50 }, //6 Charizard
+							{ (char)0x0D, (char)0x95, (char)0x05, (char)0xA0, (char)0x50, (char)0x50 }, //7 Squirtle
+							{ (char)0x85, (char)0xA0, (char)0xE3, (char)0xA6, (char)0x50, (char)0x50 }, //8 Wartortle
+							{ (char)0x85, (char)0xA0, (char)0xAC, (char)0x87, (char)0x8C, (char)0x50 }, //9 Blastoise
+							{ (char)0x86, (char)0xAD, (char)0x8F, (char)0x41, (char)0xE3, (char)0x50 }, //10 Caterpie
+							{ (char)0x93, (char)0xA5, (char)0xAB, (char)0x8D, (char)0xA6, (char)0x50 }, //11 Metapod
+							{ (char)0x19, (char)0x8F, (char)0x9B, (char)0xD8, (char)0xE3, (char)0x50 }, //12 Butterfree
+							{ (char)0x1A, (char)0xE3, (char)0x13, (char)0xA6, (char)0x50, (char)0x50 }, //13 Weedle
+							{ (char)0x89, (char)0x87, (char)0xE3, (char)0xAB, (char)0x50, (char)0x50 }, //14 Kakuna
+							{ (char)0x8C, (char)0x41, (char)0x80, (char)0xE3, (char)0x50, (char)0x50 }, //15 Beedrill
+							{ (char)0x43, (char)0xAC, (char)0x43, (char)0x50, (char)0x50, (char)0x50 }, //16 Pidgey
+							{ (char)0x41, (char)0x0B, (char)0xAF, (char)0xAB, (char)0x50, (char)0x50 }, //17 Pidgeotto
+							{ (char)0x41, (char)0x0B, (char)0xAF, (char)0xAC, (char)0x93, (char)0x50 }, //18 Pidgeot
+							{ (char)0x89, (char)0xA5, (char)0xAC, (char)0x8F, (char)0x50, (char)0x50 }, //19 Rattata
+							{ (char)0xA5, (char)0xAC, (char)0x8F, (char)0x50, (char)0x50, (char)0x50 }, //20 Raticate
+							{ (char)0x84, (char)0x95, (char)0x8C, (char)0x0C, (char)0xA0, (char)0x50 }, //21 Spearow
+							{ (char)0x84, (char)0x95, (char)0x13, (char)0xD8, (char)0xA6, (char)0x50 }, //22 Fearow
+							{ (char)0x80, (char)0xE3, (char)0x1C, (char)0x50, (char)0x50, (char)0x50 }, //23 Ekans
+							{ (char)0x80, (char)0xE3, (char)0x1C, (char)0xAC, (char)0x87, (char)0x50 }, //24 Arbok
+							{ (char)0x41, (char)0x85, (char)0x90, (char)0xAE, (char)0x82, (char)0x50 }, //25 Pikachu
+							{ (char)0xA5, (char)0x81, (char)0x90, (char)0xAE, (char)0x82, (char)0x50 }, //26 Raichu
+							{ (char)0x8A, (char)0xAB, (char)0x13, (char)0x50, (char)0x50, (char)0x50 }, //27 Sandshrew
+							{ (char)0x8A, (char)0xAB, (char)0x13, (char)0x40, (char)0xAB, (char)0x50 }, //28 Sandslash
+							{ (char)0x95, (char)0x13, (char)0xA5, (char)0xAB, (char)0xF5, (char)0x50 }, //29 Nidoran F
+							{ (char)0x95, (char)0x13, (char)0xD8, (char)0xE3, (char)0x94, (char)0x50 }, //30 Nidorina
+							{ (char)0x95, (char)0x13, (char)0x87, (char)0x81, (char)0xAB, (char)0x50 }, //31 Nidoqueen
+							{ (char)0x95, (char)0x13, (char)0xA5, (char)0xAB, (char)0xEF, (char)0x50 }, //32 Nidoran M
+							{ (char)0x95, (char)0x13, (char)0xD8, (char)0xE3, (char)0x98, (char)0x50 }, //33 Nidorino
+							{ (char)0x95, (char)0x13, (char)0x86, (char)0xAB, (char)0x07, (char)0x50 }, //34 Nidoking
+							{ (char)0x41, (char)0xAC, (char)0x41, (char)0x50, (char)0x50, (char)0x50 }, //35 Clefairy
+							{ (char)0x41, (char)0x87, (char)0x8B, (char)0xE3, (char)0x50, (char)0x50 }, //36 Clefable
+							{ (char)0xA8, (char)0x89, (char)0xAB, (char)0x50, (char)0x50, (char)0x50 }, //37 Vulpix
+							{ (char)0x86, (char)0xAE, (char)0x82, (char)0x89, (char)0xAB, (char)0x50 }, //38 Ninetales
+							{ (char)0x42, (char)0xD8, (char)0xAB, (char)0x50, (char)0x50, (char)0x50 }, //39 Jigglypuff
+							{ (char)0x42, (char)0x87, (char)0xD8, (char)0xAB, (char)0x50, (char)0x50 }, //40 Wigglytuff
+							{ (char)0x0C, (char)0x19, (char)0xAC, (char)0x93, (char)0x50, (char)0x50 }, //41 Zubat
+							{ (char)0x09, (char)0xA6, (char)0x19, (char)0xAC, (char)0x93, (char)0x50 }, //42 Golbat
+							{ (char)0x94, (char)0x0E, (char)0x98, (char)0x87, (char)0x8A, (char)0x50 }, //43 Oddish
+							{ (char)0x87, (char)0x8A, (char)0x81, (char)0x99, (char)0x94, (char)0x50 }, //44 Gloom
+							{ (char)0xA5, (char)0x9B, (char)0xA7, (char)0x8B, (char)0x80, (char)0x50 }, //45 Vileplume
+							{ (char)0x40, (char)0xA5, (char)0x8C, (char)0x50, (char)0x50, (char)0x50 }, //46 Paras
+							{ (char)0x40, (char)0xA5, (char)0x8D, (char)0x87, (char)0x93, (char)0x50 }, //47 Parasect
+							{ (char)0x89, (char)0xAB, (char)0x40, (char)0xAB, (char)0x50, (char)0x50 }, //48 Venonat
+							{ (char)0xA1, (char)0xA6, (char)0x9B, (char)0xF4, (char)0xAB, (char)0x50 }, //49 Venomoth
+							{ (char)0x12, (char)0xB0, (char)0x07, (char)0x0F, (char)0x50, (char)0x50 }, //50 Diglett
+							{ (char)0x0F, (char)0x07, (char)0x93, (char)0xD8, (char)0x84, (char)0x50 }, //51 Dugtrio
+							{ (char)0x95, (char)0xAD, (char)0xE3, (char)0x8C, (char)0x50, (char)0x50 }, //52 Meowth
+							{ (char)0x47, (char)0xA6, (char)0x8B, (char)0x80, (char)0xAB, (char)0x50 }, //53 Persian
+							{ (char)0x89, (char)0x0F, (char)0xAC, (char)0x87, (char)0x50, (char)0x50 }, //54 Psyduck
+							{ (char)0x09, (char)0xA6, (char)0x0F, (char)0xAC, (char)0x87, (char)0x50 }, //55 Golduck
+							{ (char)0x9D, (char)0xAB, (char)0x86, (char)0xE3, (char)0x50, (char)0x50 }, //56 Mankey
+							{ (char)0x84, (char)0x89, (char)0xD8, (char)0x0A, (char)0xA6, (char)0x50 }, //57 Primeape
+							{ (char)0x05, (char)0xE3, (char)0x12, (char)0xB0, (char)0x50, (char)0x50 }, //58 Growlithe
+							{ (char)0x82, (char)0x81, (char)0xAB, (char)0x12, (char)0xB0, (char)0x50 }, //59 Arcanine
+							{ (char)0x95, (char)0xAF, (char)0xA8, (char)0xA1, (char)0x50, (char)0x50 }, //60 Poliwag
+							{ (char)0x95, (char)0xAF, (char)0xA8, (char)0x0E, (char)0x50, (char)0x50 }, //61 Poliwhirl
+							{ (char)0x95, (char)0xAF, (char)0xA8, (char)0x1C, (char)0xAB, (char)0x50 }, //62 Poliwrath
+							{ (char)0x88, (char)0xE3, (char)0x8B, (char)0xB0, (char)0x50, (char)0x50 }, //63 Abra
+							{ (char)0xA3, (char)0xAB, (char)0x08, (char)0xA5, (char)0xE3, (char)0x50 }, //64 Kababra
+							{ (char)0x9B, (char)0xE3, (char)0x12, (char)0xB0, (char)0xAB, (char)0x50 }, //65 Alakazam
+							{ (char)0xA9, (char)0xAB, (char)0xD8, (char)0x86, (char)0xE3, (char)0x50 }, //66 Machop
+							{ (char)0x09, (char)0xE3, (char)0xD8, (char)0x86, (char)0xE3, (char)0x50 }, //67 Machoke
+							{ (char)0x85, (char)0x81, (char)0xD8, (char)0x86, (char)0xE3, (char)0x50 }, //68 Machamp
+							{ (char)0x9D, (char)0x0F, (char)0x91, (char)0x1C, (char)0x9E, (char)0x50 }, //69 Bellsprout
+							{ (char)0x82, (char)0x91, (char)0x13, (char)0xAB, (char)0x50, (char)0x50 }, //70 Weepinbell
+							{ (char)0x82, (char)0x91, (char)0x1C, (char)0xAC, (char)0x93, (char)0x50 }, //71 Victreebel
+							{ (char)0xA0, (char)0x98, (char)0x87, (char)0xA5, (char)0x08, (char)0x50 }, //72 Tentacool
+							{ (char)0x13, (char)0x87, (char)0x87, (char)0xA5, (char)0x08, (char)0x50 }, //73 Tentacrule
+							{ (char)0x81, (char)0x8B, (char)0x91, (char)0x1B, (char)0x92, (char)0x50 }, //74 Geodude
+							{ (char)0x09, (char)0xA8, (char)0xE3, (char)0xAB, (char)0x50, (char)0x50 }, //75 Graveler
+							{ (char)0x09, (char)0xA8, (char)0xE3, (char)0x95, (char)0xAD, (char)0x50 }, //76 Golem
+							{ (char)0x43, (char)0x95, (char)0xE3, (char)0x8F, (char)0x50, (char)0x50 }, //77 Ponyta
+							{ (char)0x06, (char)0xAD, (char)0xA8, (char)0xAC, (char)0x42, (char)0x50 }, //78 Rapidash
+							{ (char)0xA2, (char)0x13, (char)0xAB, (char)0x50, (char)0x50, (char)0x50 }, //79 Slowpoke
+							{ (char)0xA2, (char)0x13, (char)0xA5, (char)0xAB, (char)0x50, (char)0x50 }, //80 Slowbro
+							{ (char)0x89, (char)0x81, (char)0xA6, (char)0x50, (char)0x50, (char)0x50 }, //81 Magnemite
+							{ (char)0xA7, (char)0x80, (char)0x89, (char)0x81, (char)0xA6, (char)0x50 }, //82 Magneton
+							{ (char)0x85, (char)0xA1, (char)0x97, (char)0x06, (char)0x50, (char)0x50 }, //83 Farfetch'd
+							{ (char)0x13, (char)0xE3, (char)0x13, (char)0xE3, (char)0x50, (char)0x50 }, //84 Doduo
+							{ (char)0x13, (char)0xE3, (char)0x13, (char)0xD8, (char)0x84, (char)0x50 }, //85 Dodrio
+							{ (char)0x40, (char)0x82, (char)0xA9, (char)0x82, (char)0x50, (char)0x50 }, //86 Seel
+							{ (char)0x0B, (char)0xAE, (char)0x09, (char)0xAB, (char)0x50, (char)0x50 }, //87 Dewgong
+							{ (char)0x3D, (char)0x93, (char)0x3D, (char)0x8F, (char)0xE3, (char)0x50 }, //88 Grimer
+							{ (char)0x3D, (char)0x93, (char)0x3D, (char)0x93, (char)0xAB, (char)0x50 }, //89 Muk
+							{ (char)0x8B, (char)0xEB, (char)0xA6, (char)0x0F, (char)0xE3, (char)0x50 }, //90 Shellder
+							{ (char)0x40, (char)0xA6, (char)0x8B, (char)0xEB, (char)0xAB, (char)0x50 }, //91 Cloyster
+							{ (char)0x09, (char)0xE3, (char)0x8C, (char)0x50, (char)0x50, (char)0x50 }, //92 Gastly
+							{ (char)0x09, (char)0xE3, (char)0x8C, (char)0x93, (char)0x50, (char)0x50 }, //93 Haunter
+							{ (char)0x08, (char)0xAB, (char)0x05, (char)0xE3, (char)0x50, (char)0x50 }, //94 Gengar
+							{ (char)0x81, (char)0xA9, (char)0xE3, (char)0x87, (char)0x50, (char)0x50 }, //95 Onix
+							{ (char)0x8C, (char)0xD8, (char)0xE3, (char)0x42, (char)0x50, (char)0x50 }, //96 Drowzee
+							{ (char)0x8C, (char)0xD8, (char)0xE3, (char)0x40, (char)0xE3, (char)0x50 }, //97 Hypno
+							{ (char)0x87, (char)0xA5, (char)0x1B, (char)0x50, (char)0x50, (char)0x50 }, //98 Krabby
+							{ (char)0x86, (char)0xAB, (char)0x07, (char)0xA5, (char)0xE3, (char)0x50 }, //99 Kingler
+							{ (char)0x1A, (char)0xD8, (char)0xD8, (char)0x0F, (char)0x9D, (char)0x50 }, //100 Voltorb
+							{ (char)0x9D, (char)0xA6, (char)0x9D, (char)0x81, (char)0xAB, (char)0x50 }, //101 Electrode
+							{ (char)0x8F, (char)0x9D, (char)0x8F, (char)0x9D, (char)0x50, (char)0x50 }, //102 Exeggute
+							{ (char)0x94, (char)0xAC, (char)0x8B, (char)0xE3, (char)0x50, (char)0x50 }, //103 Exeggutor
+							{ (char)0x85, (char)0xA5, (char)0x85, (char)0xA5, (char)0x50, (char)0x50 }, //104 Cubone
+							{ (char)0x05, (char)0xA5, (char)0x05, (char)0xA5, (char)0x50, (char)0x50 }, //105 Marowak
+							{ (char)0x8A, (char)0xA9, (char)0x9F, (char)0xA5, (char)0xE3, (char)0x50 }, //106 Hitmonlee
+							{ (char)0x83, (char)0x1A, (char)0xA9, (char)0xA5, (char)0xE3, (char)0x50 }, //107 Hitmonchan
+							{ (char)0x3D, (char)0xA8, (char)0xD8, (char)0xAB, (char)0x05, (char)0x50 }, //108 Lickitung
+							{ (char)0x13, (char)0x05, (char)0xE3, (char)0x8C, (char)0x50, (char)0x50 }, //109 Koffing
+							{ (char)0x9D, (char)0x8F, (char)0x13, (char)0x05, (char)0x8C, (char)0x50 }, //110 Weezing
+							{ (char)0x8A, (char)0x81, (char)0x9C, (char)0xE3, (char)0xAB, (char)0x50 }, //111 Rhyhorn
+							{ (char)0x8A, (char)0x81, (char)0x13, (char)0xAB, (char)0x50, (char)0x50 }, //112 Rhydon
+							{ (char)0xA5, (char)0xAC, (char)0x86, (char)0xE3, (char)0x50, (char)0x50 }, //113 Chansey
+							{ (char)0xA1, (char)0xAB, (char)0x0B, (char)0xAD, (char)0xA5, (char)0x50 }, //114 Tangela
+							{ (char)0x05, (char)0xA6, (char)0xE3, (char)0xA5, (char)0x50, (char)0x50 }, //115 Kangaskhan
+							{ (char)0x8F, (char)0xAC, (char)0x91, (char)0xE3, (char)0x50, (char)0x50 }, //116 Horsea
+							{ (char)0x8B, (char)0xE3, (char)0x13, (char)0xA5, (char)0x50, (char)0x50 }, //117 Seadra
+							{ (char)0x93, (char)0x8A, (char)0x86, (char)0xAB, (char)0x93, (char)0x50 }, //118 Goldeen
+							{ (char)0x80, (char)0x0C, (char)0x9D, (char)0x84, (char)0x82, (char)0x50 }, //119 Seaking
+							{ (char)0x9A, (char)0x93, (char)0x12, (char)0x9D, (char)0xAB, (char)0x50 }, //120 Staryu
+							{ (char)0x8C, (char)0x8F, (char)0xE3, (char)0x9E, (char)0xE3, (char)0x50 }, //121 Starmie
+							{ (char)0x19, (char)0xD8, (char)0xA2, (char)0xE3, (char)0x13, (char)0x50 }, //122 Mr. Mime
+							{ (char)0x8C, (char)0x93, (char)0xA5, (char)0x81, (char)0x87, (char)0x50 }, //123 Scyther
+							{ (char)0xA6, (char)0xE3, (char)0x0B, (char)0xAE, (char)0xA5, (char)0x50 }, //124 Jynx
+							{ (char)0x83, (char)0xA7, (char)0x1B, (char)0xE3, (char)0x50, (char)0x50 }, //125 Electabuzz
+							{ (char)0x1B, (char)0xE3, (char)0x19, (char)0xE3, (char)0x50, (char)0x50 }, //126 Magmar
+							{ (char)0x85, (char)0x81, (char)0xA8, (char)0x8C, (char)0x50, (char)0x50 }, //127 Pinsir
+							{ (char)0x88, (char)0xAB, (char)0x8F, (char)0xA8, (char)0x8C, (char)0x50 }, //128 Tauros
+							{ (char)0x89, (char)0x81, (char)0x86, (char)0xAB, (char)0x07, (char)0x50 }, //129 Magikarp
+							{ (char)0x06, (char)0xAD, (char)0xA5, (char)0x13, (char)0x8C, (char)0x50 }, //130 Gyarados
+							{ (char)0xA5, (char)0x42, (char)0xA5, (char)0x8C, (char)0x50, (char)0x50 }, //131 Lapras
+							{ (char)0xA0, (char)0x8F, (char)0xA1, (char)0xAB, (char)0x50, (char)0x50 }, //132 Ditto
+							{ (char)0x81, (char)0xE3, (char)0x1B, (char)0x81, (char)0x50, (char)0x50 }, //133 Eevee
+							{ (char)0x8B, (char)0xAD, (char)0xA9, (char)0xE3, (char)0x0C, (char)0x50 }, //134 Vaporeon
+							{ (char)0x8A, (char)0xAB, (char)0x0F, (char)0xE3, (char)0x8C, (char)0x50 }, //135 Jolteon
+							{ (char)0x1B, (char)0xE3, (char)0x8C, (char)0x8F, (char)0xE3, (char)0x50 }, //136 Flareon
+							{ (char)0x43, (char)0xD8, (char)0x09, (char)0xAB, (char)0x50, (char)0x50 }, //137 Porygon
+							{ (char)0x84, (char)0x9F, (char)0x94, (char)0x81, (char)0x93, (char)0x50 }, //138 Omanyte
+							{ (char)0x84, (char)0x9F, (char)0x8C, (char)0x8F, (char)0xE3, (char)0x50 }, //139 Omastar
+							{ (char)0x85, (char)0x1B, (char)0x93, (char)0x50, (char)0x50, (char)0x50 }, //140 Kabuto
+							{ (char)0x85, (char)0x1B, (char)0x93, (char)0x42, (char)0x8C, (char)0x50 }, //141 Kabutops
+							{ (char)0x42, (char)0x92, (char)0xA5, (char)0x50, (char)0x50, (char)0x50 }, //142 Aerodactyl
+							{ (char)0x85, (char)0x1A, (char)0x09, (char)0xAB, (char)0x50, (char)0x50 }, //143 Snorlax
+							{ (char)0x9B, (char)0xD8, (char)0xE3, (char)0x0A, (char)0xE3, (char)0x50 }, //144 Articuno
+							{ (char)0x8A, (char)0xAB, (char)0x0F, (char)0xE3, (char)0x50, (char)0x50 }, //145 Zapdos
+							{ (char)0x9B, (char)0xE9, (char)0x81, (char)0xA2, (char)0xE3, (char)0x50 }, //146 Moltres
+							{ (char)0x9E, (char)0x95, (char)0xD8, (char)0xAE, (char)0x82, (char)0x50 }, //147 Dratini
+							{ (char)0x99, (char)0x87, (char)0xD8, (char)0xAE, (char)0xE3, (char)0x50 }, //148 Dragonair
+							{ (char)0x85, (char)0x81, (char)0xD8, (char)0xAE, (char)0xE3, (char)0x50 }, //149 Dragonite
+							{ (char)0x9E, (char)0xAE, (char)0x82, (char)0x91, (char)0xE3, (char)0x50 }, //150 Mewtwo
+							{ (char)0x9E, (char)0xAE, (char)0x82, (char)0x50, (char)0x50, (char)0x50 }, //151 Mew
+							{ (char)0x99, (char)0xAC, (char)0x40, (char)0x50, (char)0x50, (char)0x50 }, //152 Chicorita
+							{ (char)0x99, (char)0x94, (char)0xA1, (char)0x07, (char)0xA5, (char)0x50 }, //153 Bayleaf
+							{ (char)0x99, (char)0x94, (char)0xD8, (char)0xAE, (char)0x82, (char)0x50 }, //154 Meganium
+							{ (char)0x9C, (char)0x98, (char)0x84, (char)0x07, (char)0x9D, (char)0x50 }, //155
+							{ (char)0x1C, (char)0xA6, (char)0x3D, (char)0x80, (char)0xE3, (char)0x50 }, //156
+							{ (char)0x0F, (char)0x81, (char)0x94, (char)0x3D, (char)0x80, (char)0x50 }, //157
+							{ (char)0x87, (char)0xA6, (char)0x8C, (char)0x50, (char)0x50, (char)0x50 }, //158
+							{ (char)0x80, (char)0x87, (char)0x80, (char)0x50, (char)0x50, (char)0x50 }, //159
+							{ (char)0x80, (char)0x87, (char)0x83, (char)0xD8, (char)0x80, (char)0x50 }, //160
+							{ (char)0x9C, (char)0xE3, (char)0x9C, (char)0xE3, (char)0x50, (char)0x50 }, //161 Hoothoot
+							{ (char)0x1C, (char)0xE3, (char)0x1C, (char)0xE3, (char)0x50, (char)0x50 }, //162 Noctowl
+							{ (char)0x40, (char)0x90, (char)0xA0, (char)0x83, (char)0x50, (char)0x50 }, //163 Mareep
+							{ (char)0xA1, (char)0x89, (char)0x89, (char)0x50, (char)0x50, (char)0x50 }, //164 Flaffy
+							{ (char)0x12, (char)0xAB, (char)0xD8, (char)0xAE, (char)0x82, (char)0x50 }, //165 Amphrose
+							{ (char)0x9E, (char)0x89, (char)0xAB, (char)0x50, (char)0x50, (char)0x50 }, //166
+							{ (char)0xA1, (char)0xAB, (char)0x0B, (char)0xAD, (char)0x50, (char)0x50 }, //167
+							{ (char)0x0B, (char)0xAD, (char)0xA5, (char)0xAB, (char)0xA5, (char)0x50 }, //168
+							{ (char)0x99, (char)0x97, (char)0x83, (char)0x81, (char)0x50, (char)0x50 }, //169
+							{ (char)0x42, (char)0x87, (char)0xE3, (char)0x50, (char)0x50, (char)0x50 }, //170 Qwilfish
+							{ (char)0x8B, (char)0x1A, (char)0xA7, (char)0x9B, (char)0x07, (char)0x50 }, //171
+							{ (char)0x41, (char)0x90, (char)0xAE, (char)0xE3, (char)0x50, (char)0x50 }, //172 Pichu
+							{ (char)0x41, (char)0xB0, (char)0x50, (char)0x50, (char)0x50, (char)0x50 }, //173 Cleffa
+							{ (char)0x42, (char)0x42, (char)0xD8, (char)0xAB, (char)0x50, (char)0x50 }, //174 Iggiybuff
+							{ (char)0x9E, (char)0x0C, (char)0x82, (char)0x84, (char)0x50, (char)0x50 }, //175 Quagsire
+							{ (char)0x97, (char)0x81, (char)0x92, (char)0xB0, (char)0x50, (char)0x50 }, //176 Natu
+							{ (char)0x97, (char)0x81, (char)0x92, (char)0xB0, (char)0x84, (char)0x50 }, //177 Xatu
+							{ (char)0x06, (char)0xAF, (char)0x41, (char)0xAB, (char)0x50, (char)0x50 }, //178
+							{ (char)0x9D, (char)0xD8, (char)0xA6, (char)0x50, (char)0x50, (char)0x50 }, //179 Marill
+							{ (char)0x9D, (char)0xAB, (char)0x1C, (char)0xE3, (char)0x50, (char)0x50 }, //180
+							{ (char)0x81, (char)0x85, (char)0xD8, (char)0x50, (char)0x50, (char)0x50 }, //181
+							{ (char)0x07, (char)0xA8, (char)0x92, (char)0x8C, (char)0x50, (char)0x50 }, //182
+							{ (char)0x83, (char)0x87, (char)0x8B, (char)0xAB, (char)0x07, (char)0x50 }, //183 Crobat
+							{ (char)0x40, (char)0xA5, (char)0x50, (char)0x50, (char)0x50, (char)0x50 }, //184
+							{ (char)0x89, (char)0x87, (char)0xA1, (char)0x50, (char)0x50, (char)0x50 }, //185 Spinrak
+							{ (char)0x91, (char)0xE3, (char)0xCD, (char)0xAC, (char)0x13, (char)0x50 }, //186 Ariados
+							{ (char)0xA4, (char)0xA8, (char)0x81, (char)0x13, (char)0xD8, (char)0x50 }, //187 Skarmory
+							{ (char)0x80, (char)0x95, (char)0xA1, (char)0xAB, (char)0x50, (char)0x50 }, //188
+							{ (char)0x9A, (char)0x94, (char)0xE3, (char)0x0C, (char)0x50, (char)0x50 }, //189
+							{ (char)0x8A, (char)0x95, (char)0xE3, (char)0x50, (char)0x50, (char)0x50 }, //190 Sunflora
+							{ (char)0x40, (char)0x84, (char)0xAB, (char)0x50, (char)0x50, (char)0x50 }, //191 Phanphy
+							{ (char)0x13, (char)0xAB, (char)0x9B, (char)0xE9, (char)0xAB, (char)0x50 }, //192 Donphan
+							{ (char)0x91, (char)0x81, (char)0xAB, (char)0x0C, (char)0x50, (char)0x50 }, //193
+							{ (char)0x86, (char)0xD8, (char)0xAB, (char)0xD8, (char)0x86, (char)0x50 }, //194 Girafrig
+							{ (char)0x47, (char)0x81, (char)0xAB, (char)0x8F, (char)0xE3, (char)0x50 }, //195 Smergal
+							{ (char)0x89, (char)0xE3, (char)0x95, (char)0xAD, (char)0x50, (char)0x50 }, //196
+							{ (char)0xD8, (char)0xAB, (char)0xD8, (char)0xAB, (char)0x50, (char)0x50 }, //197
+							{ (char)0x3D, (char)0xA6, (char)0xA6, (char)0xAB, (char)0x50, (char)0x50 }, //198
+							{ (char)0x95, (char)0xAF, (char)0xA8, (char)0x93, (char)0x98, (char)0x50 }, //199 Politoad
+							{ (char)0xA2, (char)0x13, (char)0x86, (char)0xAB, (char)0x07, (char)0x50 }, //200 Slowking
+							{ (char)0x80, (char)0xAB, (char)0x98, (char)0xE3, (char)0xAB, (char)0x50 }, //201 Unown
+							{ (char)0xA7, (char)0x12, (char)0xB0, (char)0x19, (char)0x50, (char)0x50 }, //202 Ledyba
+							{ (char)0x9E, (char)0x91, (char)0x1C, (char)0x8B, (char)0x50, (char)0x50 }, //203 Ledian
+							{ (char)0x42, (char)0x90, (char)0x89, (char)0xE3, (char)0xAB, (char)0x50 }, //204
+							{ (char)0x83, (char)0xE3, (char)0x9B, (char)0xB0, (char)0x50, (char)0x50 }, //205 Espeon
+							{ (char)0x1B, (char)0xA5, (char)0xAC, (char)0x86, (char)0xE3, (char)0x50 }, //206 Umbreon
+							{ (char)0x8F, (char)0xE3, (char)0x19, (char)0xAB, (char)0x50, (char)0x50 }, //207
+							{ (char)0x3D, (char)0x93, (char)0x3D, (char)0x1A, (char)0xE3, (char)0x50 }, //208
+							{ (char)0x92, (char)0xAC, (char)0x43, (char)0x82, (char)0x84, (char)0x50 }, //209 Remoraid
+							{ (char)0x84, (char)0x87, (char)0x8F, (char)0xAB, (char)0x50, (char)0x50 }, //210 Octillery
+							{ (char)0x09, (char)0xAB, (char)0x07, (char)0x50, (char)0x50, (char)0x50 }, //211 Tyroge
+							{ (char)0x85, (char)0x43, (char)0x83, (char)0xA5, (char)0xE3, (char)0x50 }, //212 Hitmontop
+							{ (char)0x42, (char)0x12, (char)0xB0, (char)0x50, (char)0x50, (char)0x50 }, //213
+							{ (char)0x99, (char)0x97, (char)0x89, (char)0x50, (char)0x50, (char)0x50 }, //214 Hoppip
+							{ (char)0x43, (char)0x43, (char)0x97, (char)0x89, (char)0x50, (char)0x50 }, //215 Skiploom
+							{ (char)0xA9, (char)0x8F, (char)0x97, (char)0x89, (char)0x50, (char)0x50 }, //216 Jumpluff
+							{ (char)0x19, (char)0xD8, (char)0xD8, (char)0xE3, (char)0x94, (char)0x50 }, //217
+							{ (char)0xD8, (char)0xAC, (char)0x42, (char)0x50, (char)0x50, (char)0x50 }, //218 Smoochum
+							{ (char)0x83, (char)0xA7, (char)0x3D, (char)0x1A, (char)0xE3, (char)0x50 }, //219 Elekid
+							{ (char)0x1B, (char)0x1A, (char)0xB0, (char)0x50, (char)0x50, (char)0x50 }, //220 Magby
+							{ (char)0x86, (char)0xA7, (char)0x81, (char)0x99, (char)0x94, (char)0x50 }, //221 Bellossom
+							{ (char)0x91, (char)0x1C, (char)0x9E, (char)0xAC, (char)0x93, (char)0x50 }, //222
+							{ (char)0x9E, (char)0xA6, (char)0x8F, (char)0xAB, (char)0x87, (char)0x50 }, //223 Miltank
+							{ (char)0x1C, (char)0x9F, (char)0x8B, (char)0x85, (char)0xE3, (char)0x50 }, //224
+							{ (char)0x06, (char)0x9B, (char)0x93, (char)0x50, (char)0x50, (char)0x50 }, //225 Delibird
+							{ (char)0x89, (char)0x93, (char)0xA5, (char)0x50, (char)0x50, (char)0x50 }, //226
+							{ (char)0xA5, (char)0x81, (char)0x93, (char)0xA5, (char)0x50, (char)0x50 }, //227
+							{ (char)0x9D, (char)0x0F, (char)0xE3, (char)0x9F, (char)0x50, (char)0x50 }, //228
+							{ (char)0x98, (char)0xA8, (char)0xA9, (char)0xA5, (char)0x50, (char)0x50 }, //229
+							{ (char)0x86, (char)0xAF, (char)0xAB, (char)0x40, (char)0xAB, (char)0x50 }, //230
+							{ (char)0xA2, (char)0x9E, (char)0x85, (char)0xA5, (char)0x8C, (char)0x50 }, //231 Murkrow
+							{ (char)0x99, (char)0xAC, (char)0x41, (char)0xE3, (char)0x50, (char)0x50 }, //232
+							{ (char)0x8B, (char)0x0A, (char)0xE3, (char)0x8C, (char)0x50, (char)0x50 }, //233 Scizor
+							{ (char)0x42, (char)0xA5, (char)0xAC, (char)0x87, (char)0x8C, (char)0x50 }, //234
+							{ (char)0x12, (char)0x1A, (char)0xA6, (char)0x50, (char)0x50, (char)0x50 }, //235 Houndour
+							{ (char)0xCD, (char)0xA6, (char)0x05, (char)0xE3, (char)0x50, (char)0x50 }, //236 Houndoom
+							{ (char)0x82, (char)0xA6, (char)0x9B, (char)0x9D, (char)0xAB, (char)0x50 }, //237
+							{ (char)0xA9, (char)0xE3, (char)0x82, (char)0xA6, (char)0x9B, (char)0x50 }, //238
+							{ (char)0x43, (char)0xD8, (char)0x09, (char)0xAB, (char)0x50, (char)0x50 }, //239 Porygon2
+							{ (char)0x94, (char)0xA0, (char)0xE3, (char)0xA6, (char)0x50, (char)0x50 }, //240
+							{ (char)0x99, (char)0x05, (char)0x97, (char)0xE3, (char)0xA6, (char)0x50 }, //241 Steelix
+							{ (char)0x86, (char)0xAB, (char)0x07, (char)0x13, (char)0xA5, (char)0x50 }, //242 Kingdra
+							{ (char)0xA5, (char)0x81, (char)0x50, (char)0x50, (char)0x50, (char)0x50 }, //243 Raikou
+							{ (char)0x83, (char)0xAB, (char)0x50, (char)0x50, (char)0x50, (char)0x50 }, //244 Entei
+							{ (char)0x8C, (char)0x81, (char)0x50, (char)0x50, (char)0x50, (char)0x50 }, //245 Suicune
+							{ (char)0x95, (char)0xAE, (char)0xE3, (char)0xA5, (char)0x50, (char)0x50 }, //246 Sneasel
+							{ (char)0x9C, (char)0x82, (char)0x84, (char)0x82, (char)0x50, (char)0x50 }, //247 Ho-Oh
+							{ (char)0x93, (char)0x08, (char)0x41, (char)0xE3, (char)0x50, (char)0x50 }, //248 Togepi
+							{ (char)0x1B, (char)0xA6, (char)0xE3, (char)0x50, (char)0x50, (char)0x50 }, //249 Snubbull
+							{ (char)0x92, (char)0x81, (char)0xA6, (char)0x50, (char)0x50, (char)0x50 }, //250 Aipom
+							{ (char)0xD8, (char)0xE3, (char)0x9B, (char)0xB0, (char)0x50, (char)0x50 }  //251 Leafeon
+							};
+	string fileName[251] = { {"Bulbasaur"}, //Used to name the output file
+							{"Ivysaur"},
+							{"Venusaur"},
+							{"Charmander"},
+							{"Charmeleon"},
+							{"Charizard"},
+							{"Squirtle"},
+							{"Wartortle"},
+							{"Blastoise"},
+							{"Caterpie"},
+							{"Metapod"},
+							{"Butterfree"},
+							{"Weedle"},
+							{"Kakuna"},
+							{"Beedrill"},
+							{"Pidgey"},
+							{"Pidgeotto"},
+							{"Pidgeot"},
+							{"Rattata"},
+							{"Raticate"},
+							{"Spearow"},
+							{"Fearow"},
+							{"Ekans"},
+							{"Arbok"},
+							{"Pikachu"},
+							{"Raichu"},
+							{"Sandshrew"},
+							{"Sandslash"},
+							{"Nidoran F"},
+							{"Nidorina"},
+							{"Nidoqueen"},
+							{"Nidoran M"},
+							{"Nidorino"},
+							{"Nidoking"},
+							{"Clefairy"},
+							{"Clefable"},
+							{"Vulpix"},
+							{"Ninetales"},
+							{"Jigglypuff"},
+							{"Wigglytuff"},
+							{"Zubat"},
+							{"Golbat"},
+							{"Oddish"},
+							{"Gloom"},
+							{"Vileplume"},
+							{"Paras"},
+							{"Parasect"},
+							{"Venonat"},
+							{"Venomoth"},
+							{"Diglett"},
+							{"Dugtrio"},
+							{"Meowth"},
+							{"Persian"},
+							{"Psyduck"},
+							{"Golduck"},
+							{"Mankey"},
+							{"Primeape"},
+							{"Growlithe"},
+							{"Arcanine"},
+							{"Poliwag"},
+							{"Poliwhirl"},
+							{"Poliwrath"},
+							{"Abra"},
+							{"Kadabra"},
+							{"Alakazam"},
+							{"Machop"},
+							{"Machoke"},
+							{"Machamp"},
+							{"Bellsprout"},
+							{"Weepinbell"},
+							{"Victreebel"},
+							{"Tentacool"},
+							{"Tentacruel"},
+							{"Geodude"},
+							{"Graveler"},
+							{"Golem"},
+							{"Ponyta"},
+							{"Rapidash"},
+							{"Slowpoke"},
+							{"Slowbro"},
+							{"Magnemite"},
+							{"Magneton"},
+							{"Farfetch d"},
+							{"Doduo"},
+							{"Dodrio"},
+							{"Seel"},
+							{"Dewgong"},
+							{"Grimer"},
+							{"Muk"},
+							{"Shellder"},
+							{"Cloyster"},
+							{"Gastly"},
+							{"Haunter"},
+							{"Gengar"},
+							{"Onix"},
+							{"Drowzee"},
+							{"Hypno"},
+							{"Krabby"},
+							{"Kingler"},
+							{"Voltorb"},
+							{"Electrode"},
+							{"Exeggcute"},
+							{"Exeggutor"},
+							{"Cubone"},
+							{"Marowak"},
+							{"Hitmonlee"},
+							{"Hitmonchan"},
+							{"Lickitung"},
+							{"Koffing"},
+							{"Weezing"},
+							{"Rhyhorn"},
+							{"Rhydon"},
+							{"Chansey"},
+							{"Tangela"},
+							{"Kangaskhan"},
+							{"Horsea"},
+							{"Seadra"},
+							{"Goldeen"},
+							{"Seaking"},
+							{"Staryu"},
+							{"Starmie"},
+							{"Mr.Mime"},
+							{"Scyther"},
+							{"Jynx"},
+							{"Electabuzz"},
+							{"Magmar"},
+							{"Pinsir"},
+							{"Tauros"},
+							{"Magikarp"},
+							{"Gyarados"},
+							{"Lapras"},
+							{"Ditto"},
+							{"Eevee"},
+							{"Vaporeon"},
+							{"Jolteon"},
+							{"Flareon"},
+							{"Porygon"},
+							{"Omanyte"},
+							{"Omastar"},
+							{"Kabuto"},
+							{"Kabutops"},
+							{"Aerodactyl"},
+							{"Snorlax"},
+							{"Articuno"},
+							{"Zapdos"},
+							{"Moltres"},
+							{"Dratini"},
+							{"Dragonair"},
+							{"Dragonite"},
+							{"Mewtwo"},
+							{"Mew"},
+							{"Chikorita"},
+							{"Bayleaf"},
+							{"Meganium"},
+							{"Honooguma"},
+							{"Borubeaa"},
+							{"Dainabea"},
+							{"Kurusu"},
+							{"Akua"},
+							{"Akueria"},
+							{"Hoothoot"},
+							{"Noctowl"},
+							{"Mareep"},
+							{"Flaafy"},
+							{"Ampharos"},
+							{"Mikon"},
+							{"Monja"},
+							{"Jaranra"},
+							{"Mantine"},
+							{"Qwilfish"},
+							{"Shibirefugu"},
+							{"Pichu"},
+							{"Cleffa"},
+							{"Igglybuff"},
+							{"Quagsire"},
+							{"Natu"},
+							{"Xatu"},
+							{"Gyopin"},
+							{"Marill"},
+							{"Manboo 1"},
+							{"Ikari"},
+							{"Gurotesu"},
+							{"Crobat"},
+							{"Para"},
+							{"Spinarak"},
+							{"Ariados"},
+							{"Skarmory"},
+							{"Animon"},
+							{"Hinaazu"},
+							{"Sunflora"},
+							{"Phanpy"},
+							{"Donphan"},
+							{"Tsuinzu"},
+							{"Girafarig"},
+							{"Smeargle"},
+							{"Koonya"},
+							{"Rinrin"},
+							{"Berurun"},
+							{"Politoed"},
+							{"Slowking"},
+							{"Unown"},
+							{"Ledyba"},
+							{"Ledian"},
+							{"Puchikoon"},
+							{"Espeon"},
+							{"Umbreon"},
+							{"Taaban"},
+							{"Betobebii"},
+							{"Remoraid"},
+							{"Octillery"},
+							{"Tyrogue"},
+							{"Hitmontop"},
+							{"Pudi"},
+							{"Hoppip"},
+							{"Skiploom"},
+							{"Jumpluff"},
+							{"Baririina"},
+							{"Smoochum"},
+							{"Elekid"},
+							{"Magby"},
+							{"Bellossom"},
+							{"Tsubomitto"},
+							{"Miltank"},
+							{"Bomushikaa"},
+							{"Delibird"},
+							{"Kotora"},
+							{"Raitora"},
+							{"Madaamu"},
+							{"Norowara"},
+							{"Kyonpan"},
+							{"Murkrow"},
+							{"Blissey"},
+							{"Scizor"},
+							{"Purakkusu"},
+							{"Houndour"},
+							{"Houndoom"},
+							{"Urufuman"},
+							{"Waaurufu"},
+							{"Porygon2"},
+							{"Nameeru"},
+							{"Steelix"},
+							{"Kingdra"},
+							{"Raikou"},
+							{"Entei"},
+							{"Suicune"},
+							{"Sneasel"},
+							{"Ho-Oh"},
+							{"Togepi"},
+							{"Snubbul"},
+							{"Aipom"},
+							{"Leafeon"},
+							};
+public:
+	DemoPokemon();
+	~DemoPokemon();
+	void appendData(char p[], int index); //Addes the remaining data to the Pokemon data and performs minor fixes to the data.
+	string species(char p[], int index); //Gives the Pokemon species from the file name and ajusts the species if needed.
+};
+
+#endif
